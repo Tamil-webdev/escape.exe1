@@ -3,6 +3,7 @@
         const candidates = [
             window.__CODE_NOIR_API_URL,
             window.API_URL,
+            window.API_BASE_URL,
             window.CODE_NOIR_API_URL,
             window.__APP_API_URL
         ];
@@ -28,17 +29,20 @@
             return '';
         }
 
+        if (window.location.hostname.endsWith('.onrender.com')) {
+            return '';
+        }
+
         return `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}`;
     })();
 
     const ROUND_DURATION_MINUTES = 60;
 
     async function request(path, options = {}) {
-        if (!DEFAULT_API_BASE) {
-            throw new Error('API base URL is not configured. Set window.API_URL or window.__CODE_NOIR_API_URL to your deployed backend URL before loading backend.js.');
-        }
+        const url = DEFAULT_API_BASE
+            ? `${DEFAULT_API_BASE}${path.startsWith('/') ? '' : '/'}${path}`
+            : `${path.startsWith('/') ? '' : '/'}${path}`;
 
-        const url = `${DEFAULT_API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
         const response = await fetch(url, {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },

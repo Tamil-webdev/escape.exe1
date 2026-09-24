@@ -10,6 +10,7 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 const FRONTEND_DIR = path.resolve(__dirname, '../frontend');
 const ALLOWED_ORIGINS = new Set(
   [
+    'https://escape-exe1-2.onrender.com',
     CLIENT_URL,
     'http://localhost:3000',
     'http://127.0.0.1:3000',

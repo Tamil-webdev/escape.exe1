@@ -79,25 +79,25 @@ API_URL=http://localhost:3001
 ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-For production, use the deployed values instead of `localhost`:
+For production, use your deployed values instead of `localhost`:
 
 ```env
 PORT=10000
-CLIENT_URL=https://your-app.vercel.app
-API_URL=https://your-backend.onrender.com
-ALLOWED_ORIGINS=https://your-app.vercel.app,https://*.vercel.app
+CLIENT_URL=https://your-frontend-domain
+API_URL=https://escape-exe1-2.onrender.com
+ALLOWED_ORIGINS=https://your-frontend-domain
 ```
 
-The frontend is a static site. Because it runs in the browser, it must point to the Render backend explicitly at runtime by setting `window.API_URL` before `backend.js` loads:
+The frontend is a static site. When it is served from the Render app itself, it should use the same origin and relative `/api/...` paths. In local development, it must use `http://localhost:3001`.
 
 ```html
 <script>
-  window.API_URL = 'https://your-backend.onrender.com';
+  window.API_URL = 'http://localhost:3001';
 </script>
 <script src="backend.js"></script>
 ```
 
-This is the correct setup for Vercel hosting + Render hosting.
+This is the correct setup for local development and Render hosting.
 
 ## ☁️ Deploying Frontend to Vercel
 
@@ -109,11 +109,11 @@ This is the correct setup for Vercel hosting + Render hosting.
 
 ```html
 <script>
-  window.API_URL = 'https://your-backend.onrender.com';
+  window.API_URL = 'https://escape-exe1-2.onrender.com';
 </script>
 ```
 
-The static frontend can then call the backend normally through the Render API URL.
+The static frontend can then call the backend normally through the Render API URL, or use the same origin with relative `/api/...` calls.
 
 ## 🚀 Deploying Backend to Render
 
@@ -127,9 +127,9 @@ The static frontend can then call the backend normally through the Render API UR
 
 ```env
 PORT=10000
-CLIENT_URL=https://your-app.vercel.app
-API_URL=https://your-backend.onrender.com
-ALLOWED_ORIGINS=https://your-app.vercel.app,https://*.vercel.app
+CLIENT_URL=https://your-frontend-domain
+API_URL=https://escape-exe1-2.onrender.com
+ALLOWED_ORIGINS=https://your-frontend-domain
 ```
 
 6. Use the Render service URL as the backend for the Vercel frontend.
