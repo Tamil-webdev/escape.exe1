@@ -69,15 +69,50 @@ function setStatus(id, text, type) {
 
 // ── Monaco ────────────────────────────────────────────────────────────────────
 function loadMonaco() {
-    return new Promise(resolve => {
-        if (window.monaco) return resolve(window.monaco);
+    if (window.monaco) return Promise.resolve(window.monaco);
+    if (window.__MONACO_LOADING__) return window.__MONACO_LOADING__;
+
+    const monacoLoaderUrl = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js';
+    const loaderPromise = new Promise((resolve, reject) => {
+        const bootstrap = () => {
+            try {
+                if (!window.require || !window.require.config) {
+                    throw new Error('Monaco AMD loader is unavailable.');
+                }
+
+                window.require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' } });
+                window.require(['vs/editor/editor.main'], () => {
+                    if (window.monaco) return resolve(window.monaco);
+                    reject(new Error('Monaco failed to initialize.'));
+                });
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        const existingLoader = document.querySelector('script[data-monaco-loader="true"]');
         if (window.require && window.require.config) {
-            window.require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' } });
-            window.require(['vs/editor/editor.main'], () => resolve(window.monaco));
-        } else {
-            resolve();
+            bootstrap();
+            return;
         }
+
+        if (existingLoader) {
+            existingLoader.addEventListener('load', bootstrap, { once: true });
+            existingLoader.addEventListener('error', () => reject(new Error('Failed to load Monaco editor.')), { once: true });
+            return;
+        }
+
+        const loader = document.createElement('script');
+        loader.src = monacoLoaderUrl;
+        loader.async = true;
+        loader.setAttribute('data-monaco-loader', 'true');
+        loader.addEventListener('load', bootstrap, { once: true });
+        loader.addEventListener('error', () => reject(new Error('Failed to load Monaco editor.')), { once: true });
+        document.head.appendChild(loader);
     });
+
+    window.__MONACO_LOADING__ = loaderPromise;
+    return loaderPromise;
 }
 
 // ── Pyodide stdout capture ────────────────────────────────────────────────────
