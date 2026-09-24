@@ -80,6 +80,19 @@ API_URL=http://localhost:3001
 
 The same pattern is used in production, but the deployed frontend must point to the deployed backend URL instead of `localhost`.
 
+### GitHub Pages / static frontend deployment
+
+If the site is served from GitHub Pages, the frontend cannot call the Express API on the same static host. Set the backend origin explicitly before loading `backend.js`:
+
+```html
+<script>
+  window.API_URL = 'https://your-backend-domain.example.com';
+</script>
+<script src="backend.js"></script>
+```
+
+If you omit this value on a GitHub Pages deployment, the app now fails with a clear error instead of sending requests to the wrong host and getting 404/405 responses.
+
 ---
 
 ## 🎮 Event Flow & Routing

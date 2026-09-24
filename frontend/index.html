@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Noir — Escape.exe Euphoria</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Loading overlay ──────────────────────────────── -->
+<div id="load-overlay">
+  <div class="load-logo">CODE NOIR</div>
+  <div class="load-sub">ESCAPE.EXE EUPHORIA</div>
+  <div class="spinner"></div>
+  <div id="load-msg">Initializing…</div>
+</div>
+
+<!-- ── Round 1 Complete overlay ─────────────────────── -->
+<div id="r1-complete-overlay" class="overlay" style="display:none;">
+  <div class="result-card amber-card r1-complete-card">
+    <div class="complete-check">✓</div>
+    <h2>ROUND 1 COMPLETE</h2>
+    <p>You escaped the first room. The next room is currently locked.</p>
+    <p class="complete-sub" style="margin-top: 15px; font-weight: bold;">Please wait for Round 2 to begin.</p>
+  </div>
+</div>
+
+<!-- ── Win overlay (R2 complete) ───────────────────── -->
+<div id="win-overlay" class="overlay" style="display:none;">
+  <div class="result-card blue-card">
+    <h2>SYSTEM BREACHED</h2>
+    <p>The breach is complete. The escape is yours.</p>
+    <p style="font-family:monospace;font-size:1.3rem;color:#4ab0f5;letter-spacing:0.2em;margin:16px 0;">CIPHER</p>
+    <p>You have escaped the system.</p>
+    <button class="btn btn-blue" id="close-win" style="margin-top:16px;">Review Stages</button>
+  </div>
+</div>
+
+<!-- ── Timeout Overlay (Session Expired) ────────────────── -->
+<div id="timeout-overlay" class="overlay" style="display:none; z-index: 1000;">
+  <div class="result-card red-card timeout-card">
+    <div class="glitch-text-lg" data-text="TIME'S UP">TIME'S UP</div>
+    <h3 id="timeout-round-title" style="font-family:var(--font-mono); color:var(--red); margin:12px 0 6px;">ROUND 1 ENDED</h3>
+    <p style="color:var(--text-mid); font-style:italic;">YOU COULDN'T ESCAPE THE ROOM IN TIME</p>
+    <div class="code-display red-display" id="timeout-timer-val">00:00:00</div>
+    <p class="complete-sub">The 60-minute round limit has expired. Further submissions are locked.</p>
+    <div class="complete-btns">
+      <button class="btn btn-primary" id="timeout-home-btn" style="background:var(--red); border-color:var(--red); color:#fff;">RETURN TO EVENT HOME</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main app ─────────────────────────────────────── -->
+<div id="app">
+
+  <!-- ── LANDING SCREEN ───────────────────────────── -->
+  <div id="landing-screen" style="display:none;">
+    <!-- 1. Top Navbar -->
+    <nav class="landing-nav">
+      <div class="landing-nav-left">
+        <div class="landing-logo">CODE<span>//</span>ESCAPE</div>
+        <div class="landing-subtitle">TEAM CHALLENGE</div>
+      </div>
+      <div class="landing-nav-right">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#rules">Rules</a>
+      </div>
+    </nav>
+
+    <!-- 2. Hero Section -->
+    <section class="landing-hero">
+      <div class="live-badge"><span class="pulse"></span> LIVE CHALLENGE</div>
+      <h1>ENTER THE ROOM</h1>
+      <h2>One team. One room. One mission.</h2>
+      <p>Solve Python challenges, crack SQL clues, and escape the final stage before the clock runs out.</p>
+    </section>
+
+    <!-- 3. Login Card -->
+    <section class="landing-login-wrap">
+      <!-- Session Resume view -->
+      <div class="landing-card" id="resume-card" style="display:none;">
+        <div class="card-header">
+          <h3>Resume Session</h3>
+          <p>You are already connected to a room.</p>
+        </div>
+        <div class="session-info">
+          <div class="session-row">
+            <span class="session-label">TEAM:</span>
+            <span class="session-val" id="resume-team-val"></span>
+          </div>
+          <div class="session-row">
+            <span class="session-label">ROOM:</span>
+            <span class="session-val" id="resume-room-val"></span>
+          </div>
+        </div>
+        <button class="btn btn-cyan join-btn" id="resume-btn">RESUME ROOM →</button>
+        <button class="btn btn-reset" id="leave-room-btn" style="margin-top:12px;width:100%;">Leave Room</button>
+      </div>
+
+      <!-- Join Room view -->
+      <div class="landing-card" id="join-card">
+        <div class="card-header">
+          <h3>Join Your Team</h3>
+          <p>Enter your team name and room code to join the challenge.</p>
+        </div>
+
+        <form id="join-form" novalidate>
+          <div class="input-group">
+            <label for="team-name">TEAM NAME</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👥</span>
+              <input type="text" id="team-name" placeholder="Enter the team name" required autocomplete="off">
+            </div>
+            <div class="input-error" id="team-name-error"></div>
+          </div>
+
+          <div class="input-group">
+            <label for="room-code">ROOM CODE</label>
+            <div class="input-wrapper room-wrapper">
+              <span class="input-icon">🔑</span>
+              <input type="text" id="room-code" placeholder="Enter the room code" required autocomplete="off" maxlength="10" style="text-transform:uppercase">
+            </div>
+            <div class="input-error" id="room-error"></div>
+          </div>
+
+          <!-- 4. One-Per-Team Warning -->
+          <div class="team-limit-notice">
+            <div class="notice-icon">⚠</div>
+            <div class="notice-content">
+              <strong>ONE PLAYER PER TEAM</strong>
+              <p>Only one participant from each team can join this room. Make sure the correct teammate enters the room before starting.</p>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-cyan join-btn" id="join-btn">JOIN ROOM →</button>
+          <div class="form-global-error" id="join-global-error" aria-live="polite"></div>
+        </form>
+      </div>
+      
+      <!-- 5. Room Status -->
+      <div class="room-status-box">
+        <div class="status-indicator">
+          <span class="status-dot green"></span> ROOM READY
+        </div>
+        <div class="status-desc">Waiting for teams to connect</div>
+      </div>
+    </section>
+
+    <!-- 6. Rules / How It Works -->
+    <section class="landing-info" id="how-it-works">
+      <div class="info-card">
+        <div class="info-icon">👤</div>
+        <h4>ONE TEAM MEMBER</h4>
+        <p>Only one person from each team enters the room.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">💻</div>
+        <h4>SOLVE CHALLENGES</h4>
+        <p>Write Python and SQL to unlock the next stage.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🔓</div>
+        <h4>ESCAPE</h4>
+        <p>Solve the final password stage and complete the mission.</p>
+      </div>
+    </section>
+
+    <!-- 7. Footer -->
+    <footer class="landing-footer">
+      <div>CODE//ESCAPE</div>
+      <div class="footer-center">Built for competitive programmers<br><a href="admin.html" style="color:var(--text-dim); text-decoration:none; font-size: 0.7rem; margin-top:4px; display:inline-block;">ADMIN ACCESS</a></div>
+      <div>&copy; 2026</div>
+    </footer>
+  </div><!-- #landing-screen -->
+
+
+
+  <!-- ── GAME SCREEN ──────────────────────────────── -->
+  <div id="game-screen">
+
+    <header>
+      <div class="logo">CODE <span>NOIR</span></div>
+      <span id="round-badge" class="round-badge r1">ROUND 1 — BOOT SEQUENCE</span>
+      <div id="participant-timer-badge" class="timer-badge">
+        <span class="timer-icon">⏱</span>
+        <span id="participant-timer-val" class="timer-display-val">01:00:00</span>
+      </div>
+      <div class="case-label" id="case-num">Stage 1 / 5</div>
+      <div class="progress-dots" id="progress-dots"></div>
+      <div class="header-actions" style="display:flex; align-items:center; gap:8px;">
+        <div style="font-family:monospace; color:var(--cyan); font-size:0.8rem; margin-right:8px;" id="game-team-name-display"></div>
+        <button class="btn btn-sm" id="schema-btn">📋 Schema</button>
+        <button class="btn btn-sm btn-reset" id="reset-btn">↺ Reset</button>
+      </div>
+    </header>
+
+    <div class="story-banner">
+      <div class="puzzle-title r1-title" id="puzzle-title">Stage #1</div>
+      <div class="story-text" id="story-text"></div>
+    </div>
+
+    <!-- Schema reference (hidden by default) -->
+    <pre id="schema-box"></pre>
+
+    <!-- Hint box (hidden until triggered) -->
+    <div id="hint-box">
+      <span style="color:#7a6018;font-family:monospace;font-size:0.75rem;margin-right:8px;">HINT</span>
+      <span id="hint-text"></span>
+    </div>
+
+    <!-- ── Two-panel game area ──────────────────── -->
+    <div class="game-area">
+
+      <!-- LEFT PANEL: Python editor or Clue text -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title" id="left-panel-title">🐍 Python Debugger</span>
+          <span class="status-badge" id="py-status"></span>
+        </div>
+
+        <!-- Python editor section (default) -->
+        <div id="py-editor-wrap" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+          <div class="editor-wrap">
+            <div class="editor-container" id="py-editor"></div>
+          </div>
+          <div class="panel-toolbar">
+            <button class="btn btn-amber" id="run-py-btn">Run Code ▶</button>
+            <span class="toolbar-hint">Fix the bug so the output matches</span>
+          </div>
+          <div class="output-area" id="py-output"></div>
+        </div>
+
+        <!-- Clue section (R2 Stage 3 — replaces editor on left) -->
+        <div id="clue-wrap" class="clue-wrap">
+          <div id="clue-content" class="clue-content"></div>
+        </div>
+      </div><!-- left panel -->
+
+      <!-- RIGHT PANEL: SQL investigation, node display, or password -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title" id="right-panel-title">🔒 SQL Investigation</span>
+          <span class="status-badge" id="sql-status"></span>
+        </div>
+
+        <div class="right-inner">
+          <!-- Lock overlay covers right panel until Python passes -->
+          <div id="lock-overlay">
+            <div class="lock-big">🔒</div>
+            <div class="lock-message">
+              Fix the Python bug first.<br>
+              The clue will unlock this panel.
+            </div>
+          </div>
+
+          <!-- Riddle / clue box -->
+          <div class="riddle-box" id="riddle-box">
+            <div class="riddle-label">Clue</div>
+            <div id="riddle-text"></div>
+          </div>
+
+          <!-- SQL editor + results -->
+          <div id="sql-editor-wrap" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+            <div class="editor-wrap">
+              <div class="editor-container" id="sql-editor"></div>
+            </div>
+            <div class="panel-toolbar">
+              <button class="btn btn-amber" id="run-sql-btn">Run Query ▶</button>
+              <span class="toolbar-hint">Query must return exactly 1 row</span>
+            </div>
+            <div class="output-area" id="sql-output"></div>
+          </div>
+
+          <!-- Node display (R2 Stages 1-2 success result) -->
+          <div id="node-display">
+            <div class="node-label" id="node-label">ACCESS NODE</div>
+            <div class="node-value" id="node-value">——</div>
+            <div class="node-note">Fragment recovered. Proceed to the next stage →</div>
+          </div>
+
+          <!-- Password panel (R2 Stage 4 — filled dynamically) -->
+          <div class="password-panel" id="password-panel"></div>
+
+        </div><!-- .right-inner -->
+      </div><!-- right panel -->
+
+    </div><!-- .game-area -->
+
+    <!-- Boot panel (R1 completion — shown at bottom when reviewing R1 after complete) -->
+    <div id="boot-panel">
+      <p>✓ All Boot Sequence checks passed. Your Final Access Code:</p>
+      <div class="boot-code">SYS-7749</div>
+      <p>Present this code to the event coordinator to advance to Round 2.</p>
+      <button class="btn btn-sm" id="close-boot" style="margin-top:4px;">Dismiss</button>
+    </div>
+
+    <!-- ── Nav bar ──────────────────────────────── -->
+    <div class="nav-bar">
+      <button class="btn" id="prev-btn">← Prev</button>
+      <span class="spacer"></span>
+      <button class="btn btn-amber" id="next-btn">Next →</button>
+    </div>
+
+  </div><!-- #game-screen -->
+
+</div><!-- #app -->
+
+<!-- ── CDN scripts ─────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.12.0/dist/sql-wasm.js"></script>
+<script src="config.js"></script>
+<script src="backend.js"></script>
+<script src="puzzles.js"></script>
+<script src="db.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

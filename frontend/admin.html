@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODE//ESCAPE - Control Center</title>
+  <!-- Base & Admin Styles -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+  <script src="config.js"></script>
+  <script src="backend.js"></script>
+</head>
+<body class="admin-body">
+
+  <!-- LOGIN SCREEN -->
+  <div id="admin-login-screen" class="admin-screen flex-center">
+    <div class="admin-login-card glass-panel">
+      <div class="branding">
+        <h1 class="glitch" data-text="CODE//ESCAPE">CODE//ESCAPE</h1>
+        <h2 class="subtitle">ADMIN CONTROL CENTER</h2>
+      </div>
+      <form id="admin-login-form">
+        <div class="input-group">
+          <label>Administrator ID</label>
+          <input type="text" id="admin-username" required autocomplete="off" value="admin">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="admin-password" required value="password">
+        </div>
+        <div id="admin-login-error" class="input-error"></div>
+        <button type="submit" class="btn btn-primary" id="admin-login-btn">SIGN IN &rarr;</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD -->
+  <div id="admin-dashboard-screen" class="admin-screen" style="display: none;">
+    <div class="dashboard-container">
+      
+      <!-- HEADER -->
+      <header class="admin-header-card glass-panel">
+        <div class="header-left">
+          <div class="header-brand">
+            <span class="brand-name">CODE//ESCAPE</span>
+            <span class="brand-tag">CONTROL CENTER</span>
+          </div>
+          <div class="event-live-badge" id="event-live-status-pill">
+            <span class="live-dot" id="live-dot-indicator"></span>
+            <span id="header-event-status-text">CODE NOIR &bull; LIVE</span>
+          </div>
+        </div>
+
+        <div class="header-center">
+          <div class="header-event-meta">
+            <div class="meta-item">
+              <span class="meta-label">EVENT</span>
+              <span class="meta-val cyan" id="hdr-event-name">Code Noir</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">STATUS</span>
+              <span class="meta-val" id="hdr-event-status">LIVE</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">STARTED</span>
+              <span class="meta-val" id="hdr-event-time">10:00 AM</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">LIVE DATA</span>
+              <span class="meta-val text-dim" id="hdr-live-indicator">Auto-syncing...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="admin-profile">
+            <span class="admin-role">Administrator</span>
+            <button id="admin-logout-btn" class="btn btn-outline btn-sm">LOGOUT</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ROUND TABS -->
+      <div class="round-tabs-container glass-panel" style="margin-bottom: 20px; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--cyan);">
+        <div class="round-tabs flex-row gap-2">
+          <button class="btn btn-primary" id="tab-round-1" style="font-weight:bold;">ROUND 1</button>
+          <button class="btn btn-outline" id="tab-round-2" style="font-weight:bold;">ROUND 2</button>
+        </div>
+        <div class="round-actions flex-row gap-2">
+          <button class="btn btn-green" id="btn-start-round-2" style="display:none; font-weight:bold;">▶ START ROUND 2</button>
+          <button class="btn btn-danger" id="btn-reset-round-1" style="font-weight:bold; font-size:0.8rem; background:rgba(230,57,70,0.2); border-color:#e63946;">↺ RESET ROUND 1</button>
+          <button class="btn btn-danger" id="btn-reset-round-2" style="display:none; font-weight:bold; font-size:0.8rem; background:rgba(230,57,70,0.2); border-color:#e63946;">↺ RESET ROUND 2</button>
+        </div>
+      </div>
+
+      <!-- TOP STATISTICS -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">TOTAL ROOMS</span>
+            <span class="stat-icon">🚪</span>
+          </div>
+          <div class="stat-value cyan" id="stat-rooms">0</div>
+          <div class="stat-sub" id="stat-rooms-sub">0 Active Rooms</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">TOTAL TEAMS</span>
+            <span class="stat-icon">👥</span>
+          </div>
+          <div class="stat-value" id="stat-teams">0</div>
+          <div class="stat-sub" id="stat-teams-sub">0 Participants</div>
+        </div>
+
+        <div class="stat-card card-glow-success">
+          <div class="stat-header">
+            <span class="stat-label">ACTIVE TEAMS</span>
+            <span class="stat-icon">⚡</span>
+          </div>
+          <div class="stat-value green" id="stat-active">0</div>
+          <div class="stat-sub" id="stat-active-sub">Currently playing</div>
+        </div>
+
+        <div class="stat-card card-glow-warning">
+          <div class="stat-header">
+            <span class="stat-label">WAITING TEAMS</span>
+            <span class="stat-icon">⏳</span>
+          </div>
+          <div class="stat-value amber" id="stat-waiting">0</div>
+          <div class="stat-sub">Joined, not playing</div>
+        </div>
+
+        <div class="stat-card card-glow-primary">
+          <div class="stat-header">
+            <span class="stat-label">COMPLETED TEAMS</span>
+            <span class="stat-icon">🏆</span>
+          </div>
+          <div class="stat-value cyan" id="stat-completed">0</div>
+          <div class="stat-sub">Finished all rounds</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">SOLVED STAGES</span>
+            <span class="stat-icon">🧩</span>
+          </div>
+          <div class="stat-value" id="stat-solved">0</div>
+          <div class="stat-sub" id="stat-attempts-sub">0 Submissions</div>
+        </div>
+      </section>
+
+      <!-- EVENT OVERVIEW & ROOM MANAGEMENT GRID -->
+      <div class="dashboard-grid-2col">
+        <!-- Event Overview Card -->
+        <div class="glass-panel main-card">
+          <div class="card-header flex-between">
+            <div class="card-title-group">
+              <h3>EVENT OVERVIEW</h3>
+              <span class="card-subtitle">Master event controls and parameters</span>
+            </div>
+            <div class="card-controls flex-row gap-2" id="event-action-controls">
+              <a href="CODE_NOIR_Official_Answer_Key.pdf" target="_blank" class="btn btn-outline btn-sm" style="font-weight:bold; color:var(--cyan); border-color:var(--cyan); text-decoration:none;">📄 DOWNLOAD ANSWER KEY</a>
+              <!-- Event actions generated by JS -->
+            </div>
+          </div>
+          <div class="panel-body" id="event-overview-container">
+            <p class="dim text-center">Loading Code Noir details...</p>
+          </div>
+          <div class="panel-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-light); background: rgba(0,0,0,0.2);">
+            <button class="btn btn-danger w-100" id="btn-reset-event-data" style="font-weight:bold; letter-spacing:1px; background:#e63946; border-color:#e63946; color:#fff;">
+              ⚠️ RESET EVENT DATA
+            </button>
+          </div>
+        </div>
+
+        <!-- Room Management Card -->
+        <div class="glass-panel main-card">
+          <div class="card-header flex-between">
+            <div class="card-title-group">
+              <h3>ROOM MANAGEMENT</h3>
+              <span class="card-subtitle">Active rooms & room access codes</span>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-show-create-room">+ CREATE ROOM</button>
+          </div>
+          <div class="panel-body">
+            <div id="rooms-grid-container" class="rooms-table-wrapper">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEAM MANAGEMENT (ALLOWED TEAMS WHITELIST) -->
+      <section class="glass-panel main-card mt-4">
+        <div class="card-header flex-between flex-wrap gap-3">
+          <div class="card-title-group">
+            <h3>TEAM MANAGEMENT</h3>
+            <span class="card-subtitle">Pre-registered official teams allowed to participate (Normalized matching)</span>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-show-add-team">+ ADD ALLOWED TEAM</button>
+        </div>
+        <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+          <table class="admin-table" id="allowed-teams-table">
+            <thead>
+              <tr>
+                <th>Team Name (Normalized)</th>
+                <th>Status</th>
+                <th>Registered At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allowed-teams-tbody">
+              <tr><td colspan="4" class="text-center dim">Loading allowed teams...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- LIVE TEAM MONITOR SECTION -->
+      <section class="glass-panel main-card mt-4">
+        <div class="card-header flex-between flex-wrap gap-3">
+          <div class="card-title-group">
+            <h3>LIVE TEAM MONITOR</h3>
+            <span class="card-subtitle">Real-time team status, progress & activity tracking</span>
+          </div>
+          <div class="monitor-filter-bar">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="monitor-search-input" placeholder="Search team or room code..." class="admin-input-sm">
+            </div>
+            <select id="monitor-status-filter" class="admin-select-sm">
+              <option value="ALL">All Statuses</option>
+              <option value="PLAYING">PLAYING</option>
+              <option value="JOINED">WAITING / JOINED</option>
+              <option value="IDLE">IDLE</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="DISCONNECTED">DISCONNECTED</option>
+            </select>
+            <select id="monitor-room-filter" class="admin-select-sm">
+              <option value="ALL">All Rooms</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="admin-table" id="monitor-table">
+            <thead>
+              <tr>
+                <th>Team Name</th>
+                <th>Room</th>
+                <th>Room Code</th>
+                <th>Joined At</th>
+                <th>Status</th>
+                <th>Current Stage</th>
+                <th>Progress</th>
+                <th>Time Elapsed</th>
+                <th>Last Activity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="monitor-table-body">
+              <tr><td colspan="10" class="text-center dim">Loading monitor feed...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- BOTTOM TWO-COLUMN GRID: ACTIVITY FEED & LEADERBOARD -->
+      <div class="dashboard-grid-2col mt-4">
+        <!-- Live Activity Feed -->
+        <div class="glass-panel main-card">
+          <div class="card-header flex-between">
+            <div class="card-title-group">
+              <h3>LIVE ACTIVITY FEED</h3>
+              <span class="card-subtitle">Audit log of team joins, completions & events</span>
+            </div>
+            <span class="live-pulse-badge">● STREAMING</span>
+          </div>
+          <div class="activity-feed-container" id="activity-feed-box">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Live Leaderboard -->
+        <div class="glass-panel main-card">
+          <div class="card-header flex-between">
+            <div class="card-title-group">
+              <h3>LIVE LEADERBOARD</h3>
+              <span class="card-subtitle">Rankings based on solved stages & penalty tiebreaker</span>
+            </div>
+            <select id="lb-event-filter" class="admin-select-sm" style="display:none;"></select>
+          </div>
+          <div class="table-container compact">
+            <table class="admin-table" id="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Team</th>
+                  <th>Room</th>
+                  <th>Solved</th>
+                  <th>Progress</th>
+                  <th>Attempts</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-table-body">
+                <tr><td colspan="7" class="text-center dim">Loading leaderboard...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /.dashboard-container -->
+  </div> <!-- /#admin-dashboard-screen -->
+
+  <!-- MODAL: CREATE ROOM -->
+  <div id="modal-create-room" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass-panel">
+      <div class="modal-header flex-between">
+        <h3>CREATE NEW ROOM</h3>
+        <button type="button" class="modal-close-btn modal-close">&times;</button>
+      </div>
+      <form id="form-create-room">
+        <div class="input-group">
+          <label>Target Event</label>
+          <select id="cr-event-id" class="admin-select w-100" required></select>
+        </div>
+        <div class="input-group">
+          <label>Room Name</label>
+          <input type="text" id="cr-room-name" placeholder="e.g. Code Noir - Round 1" required>
+        </div>
+        <div class="input-group">
+          <label>Max Teams Capacity</label>
+          <input type="number" id="cr-max-teams" value="15" min="1" max="100" required>
+        </div>
+        <div id="cr-result" style="display:none;" class="mb-3 highlight-box">
+          <div class="dim">Generated Room Code:</div>
+          <div id="cr-generated-code" class="generated-code-display"></div>
+          <div class="code-note">Share this Room Code with participants to allow room entry.</div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline modal-close">Close</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-create-room">Create Room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: TEAM DETAILS -->
+  <div id="modal-team-details" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass-panel modal-lg">
+      <div class="modal-header flex-between">
+        <div>
+          <h3 id="td-modal-team-name">TEAM DETAILS</h3>
+          <span id="td-modal-event-name" class="dim" style="font-size:0.85rem;">Code Noir</span>
+        </div>
+        <button type="button" class="modal-close-btn modal-close-team">&times;</button>
+      </div>
+      <div class="modal-body" id="td-modal-content">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline modal-close-team">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ROOM DETAILS & TEAMS -->
+  <div id="modal-room-details" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass-panel modal-lg">
+      <div class="modal-header flex-between">
+        <div>
+          <h3 id="rd-modal-room-name">ROOM DETAILS</h3>
+          <span id="rd-modal-room-code" class="code-badge">----</span>
+        </div>
+        <button type="button" class="modal-close-btn modal-close-room">&times;</button>
+      </div>
+      <div class="modal-body" id="rd-modal-content">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline modal-close-room">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD ALLOWED TEAM -->
+  <div id="modal-add-team" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass-panel">
+      <div class="modal-header flex-between">
+        <h3>REGISTER ALLOWED TEAM</h3>
+        <button type="button" class="modal-close-btn modal-close-add-team">&times;</button>
+      </div>
+      <form id="form-add-team">
+        <div class="input-group">
+          <label>Official Team Name</label>
+          <input type="text" id="at-team-name" placeholder="e.g. cyber warriors" required autocomplete="off">
+          <div class="dim mt-1" style="font-size:0.8rem; color:var(--text-mid);">
+            Stored in normalized lowercase. Internal spaces preserved. (e.g. "cyber warriors")
+          </div>
+        </div>
+        <div id="at-error" class="input-error mb-2"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline modal-close-add-team">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-add-team">Register Team</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET EVENT DATA CONFIRMATION -->
+  <div id="modal-reset-event-confirm" class="modal-overlay" style="display: none; z-index: 1100;">
+    <div class="modal-content glass-panel" style="border-top: 3px solid #e63946;">
+      <div class="modal-header">
+        <h3 style="color:#e63946;">Reset Code Noir Event Data?</h3>
+      </div>
+      <div class="modal-body" style="padding: 1rem 0;">
+        <p style="color:var(--text-main); font-size: 1rem; line-height: 1.5; margin-bottom: 1rem;">
+          This will permanently remove test teams, sessions, progress, attempts, leaderboard data, activity logs, and other participant-generated data.
+        </p>
+        <p style="color:var(--cyan); font-weight: bold; margin-bottom: 1rem;">
+          The Code Noir event itself will NOT be deleted.
+        </p>
+        <p style="color:#e63946; font-size: 0.9rem; font-style: italic;">
+          This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-actions flex-between" style="gap: 1rem;">
+        <button type="button" class="btn btn-outline modal-close-reset-event">CANCEL</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-reset-event" style="background:#e63946; border-color:#e63946; color:#fff; font-weight:bold;">
+          RESET EVENT DATA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET ROUND 1 CONFIRMATION -->
+  <div id="modal-reset-round-1" class="modal-overlay" style="display: none; z-index: 1100;">
+    <div class="modal-content glass-panel" style="border-top: 3px solid #e63946;">
+      <div class="modal-header">
+        <h3 style="color:#e63946;">Reset Round 1 Data?</h3>
+      </div>
+      <div class="modal-body" style="padding: 1rem 0;">
+        <p style="color:var(--text-main); font-size: 1rem; line-height: 1.5; margin-bottom: 1rem;">
+          This will wipe all Round 1 progress and sessions for all teams. Round 2 data will NOT be affected.
+        </p>
+      </div>
+      <div class="modal-actions flex-between" style="gap: 1rem;">
+        <button type="button" class="btn btn-outline modal-close-reset-r1">CANCEL</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-reset-r1" style="background:#e63946; border-color:#e63946; color:#fff; font-weight:bold;">
+          RESET ROUND 1
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET ROUND 2 CONFIRMATION -->
+  <div id="modal-reset-round-2" class="modal-overlay" style="display: none; z-index: 1100;">
+    <div class="modal-content glass-panel" style="border-top: 3px solid #e63946;">
+      <div class="modal-header">
+        <h3 style="color:#e63946;">Reset Round 2 Data?</h3>
+      </div>
+      <div class="modal-body" style="padding: 1rem 0;">
+        <p style="color:var(--text-main); font-size: 1rem; line-height: 1.5; margin-bottom: 1rem;">
+          This will wipe all Round 2 progress and sessions for all teams, and stop Round 2 if it's currently active. Round 1 data will NOT be affected.
+        </p>
+      </div>
+      <div class="modal-actions flex-between" style="gap: 1rem;">
+        <button type="button" class="btn btn-outline modal-close-reset-r2">CANCEL</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-reset-r2" style="background:#e63946; border-color:#e63946; color:#fff; font-weight:bold;">
+          RESET ROUND 2
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
