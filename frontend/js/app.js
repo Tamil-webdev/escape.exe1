@@ -176,7 +176,10 @@ async function routeUser() {
 
     // ── On round2.html ────────────────────────────────────────────────────────
     if (page === 2) {
-        if (!session) { window.location.href = 'index.html'; return; }
+        if (!session) {
+            showRound2Auth();
+            return;
+        }
 
         // Step 1: Check Round 2 activation from BACKEND — the only authoritative source.
         // Do NOT use localStorage here; it may be empty on a fresh tab or different device.
@@ -261,6 +264,20 @@ function showR1CompleteLock() {
     }, 3000);
 }
 
+function showRound2Auth() {
+    const authOverlay = document.getElementById('round2-auth-overlay');
+    const gameScreen = document.getElementById('game-screen');
+    if (authOverlay) authOverlay.style.display = 'flex';
+    if (gameScreen) gameScreen.style.display = 'none';
+}
+
+function hideRound2Auth() {
+    const authOverlay = document.getElementById('round2-auth-overlay');
+    const gameScreen = document.getElementById('game-screen');
+    if (authOverlay) authOverlay.style.display = 'none';
+    if (gameScreen) gameScreen.style.display = 'block';
+}
+
 // ── Landing Logic ─────────────────────────────────────────────────────────────
 
 function handleJoinSubmit(e) {
@@ -308,6 +325,52 @@ function handleJoinSubmit(e) {
             btn.disabled = false;
             btn.textContent = 'TRY AGAIN';
         });
+}
+
+async function handleRound2JoinSubmit(e) {
+    e.preventDefault();
+
+    const teamInput = document.getElementById('r2-team-name');
+    const roomInput = document.getElementById('r2-room-code');
+    const teamName = teamInput.value.trim();
+    const roomCode = roomInput.value.trim().toUpperCase();
+
+    const teamGroup = teamInput.closest('.input-group');
+    const roomGroup = roomInput.closest('.input-group');
+    const globalError = document.getElementById('r2-global-error');
+
+    teamGroup.classList.remove('has-error');
+    roomGroup.classList.remove('has-error');
+    globalError.textContent = '';
+
+    let valid = true;
+    if (!teamName) {
+        document.getElementById('r2-team-name-error').textContent = 'Enter your Team Name';
+        teamGroup.classList.add('has-error');
+        valid = false;
+    }
+    if (!roomCode) {
+        document.getElementById('r2-room-error').textContent = 'Enter Room Code';
+        roomGroup.classList.add('has-error');
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    const btn = document.getElementById('r2-join-btn');
+    btn.disabled = true;
+    btn.textContent = 'VERIFYING TEAM...';
+
+    try {
+        const res = await window.BackendAPI.participantLogin(teamName, roomCode);
+        saveRoomSession({ teamName: res.teamName, teamId: res.teamId, roomId: res.roomId, roomCode, participantId: res.participantId, joinedAt: Date.now() });
+        hideRound2Auth();
+        await routeUser();
+    } catch (err) {
+        globalError.textContent = err.message || 'Unable to verify team.';
+        btn.disabled = false;
+        btn.textContent = 'ENTER ROUND 2';
+    }
 }
 
 function handleResumeRoom() {
@@ -1015,6 +1078,7 @@ async function init() {
     document.getElementById('join-form')       ?.addEventListener('submit', handleJoinSubmit);
     document.getElementById('resume-btn')      ?.addEventListener('click', handleResumeRoom);
     document.getElementById('leave-room-btn')  ?.addEventListener('click', handleLeaveRoom);
+    document.getElementById('round2-join-form')?.addEventListener('submit', handleRound2JoinSubmit);
     document.getElementById('timeout-home-btn')?.addEventListener('click', () => {
         document.getElementById('timeout-overlay').style.display = 'none';
         window.location.href = 'index.html';

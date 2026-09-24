@@ -52,6 +52,38 @@
   </div>
 </div>
 
+<!-- ── Direct Round 2 Team Verification ── -->
+<div id="round2-auth-overlay" class="overlay" style="display:flex;">
+  <div class="result-card blue-card" style="max-width:420px; width:min(90vw, 420px);">
+    <div class="complete-check" style="color:var(--cyan);">🔐</div>
+    <h2>ENTER ROUND 2</h2>
+    <p>Use the same Team Name and Room Code registered by the admin.</p>
+
+    <form id="round2-join-form" novalidate>
+      <div class="input-group">
+        <label for="r2-team-name">TEAM NAME</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👥</span>
+          <input type="text" id="r2-team-name" placeholder="Enter your team name" required autocomplete="off">
+        </div>
+        <div class="input-error" id="r2-team-name-error"></div>
+      </div>
+
+      <div class="input-group" style="margin-top:12px;">
+        <label for="r2-room-code">ROOM CODE</label>
+        <div class="input-wrapper room-wrapper">
+          <span class="input-icon">🔑</span>
+          <input type="text" id="r2-room-code" placeholder="Enter the room code" required autocomplete="off" maxlength="10" style="text-transform:uppercase">
+        </div>
+        <div class="input-error" id="r2-room-error"></div>
+      </div>
+
+      <button type="submit" class="btn btn-cyan join-btn" id="r2-join-btn" style="margin-top:18px; width:100%;">ENTER ROUND 2</button>
+      <div class="form-global-error" id="r2-global-error" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
 <!-- ── Main app ───────────────────────────────────── -->
 <div id="app">
   <!-- GAME SCREEN (Round 2) -->
