@@ -70,28 +70,72 @@ The browser no longer acts as the single source of truth for team registration, 
 
 ## 🔐 Environment Variables
 
-Create a `.env` file in the project root using the example below:
+Create a `.env` file in the backend folder for local development:
 
 ```env
 PORT=3001
 CLIENT_URL=http://localhost:3000
 API_URL=http://localhost:3001
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-The same pattern is used in production, but the deployed frontend must point to the deployed backend URL instead of `localhost`.
+For production, use the deployed values instead of `localhost`:
 
-### GitHub Pages / static frontend deployment
+```env
+PORT=10000
+CLIENT_URL=https://your-app.vercel.app
+API_URL=https://your-backend.onrender.com
+ALLOWED_ORIGINS=https://your-app.vercel.app,https://*.vercel.app
+```
 
-If the site is served from GitHub Pages, the frontend cannot call the Express API on the same static host. Set the backend origin explicitly before loading `backend.js`:
+The frontend is a static site. Because it runs in the browser, it must point to the Render backend explicitly at runtime by setting `window.API_URL` before `backend.js` loads:
 
 ```html
 <script>
-  window.API_URL = 'https://your-backend-domain.example.com';
+  window.API_URL = 'https://your-backend.onrender.com';
 </script>
 <script src="backend.js"></script>
 ```
 
-If you omit this value on a GitHub Pages deployment, the app now fails with a clear error instead of sending requests to the wrong host and getting 404/405 responses.
+This is the correct setup for Vercel hosting + Render hosting.
+
+## ☁️ Deploying Frontend to Vercel
+
+1. Open the Vercel dashboard and import this repository.
+2. Set the project root to `frontend`.
+3. Use the framework preset `Other` or static site.
+4. Do not point the frontend at `localhost`.
+5. Add this runtime config to the page before `backend.js` loads:
+
+```html
+<script>
+  window.API_URL = 'https://your-backend.onrender.com';
+</script>
+```
+
+The static frontend can then call the backend normally through the Render API URL.
+
+## 🚀 Deploying Backend to Render
+
+1. Create a new Web Service on Render.
+2. Connect the repository.
+3. Set the root directory to `backend`.
+4. Use these settings:
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+5. Add environment variables:
+
+```env
+PORT=10000
+CLIENT_URL=https://your-app.vercel.app
+API_URL=https://your-backend.onrender.com
+ALLOWED_ORIGINS=https://your-app.vercel.app,https://*.vercel.app
+```
+
+6. Use the Render service URL as the backend for the Vercel frontend.
+7. Keep the existing JSON DB in `backend/data/app-data.json` as the canonical data source.
+
+> Note: Render's filesystem is ephemeral between deploys, so if you need durable data beyond redeploys, attach a persistent disk or migrate the JSON store to a proper database. The project is structured to keep the current JSON file in place and continue using it during normal service operation.
 
 ---
 

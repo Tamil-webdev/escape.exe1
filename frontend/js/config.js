@@ -3,11 +3,15 @@
   const configuredApiUrl = window.__CODE_NOIR_API_URL || window.API_URL || window.CODE_NOIR_API_URL || '';
 
   if (configuredApiUrl) {
-    window.API_URL = configuredApiUrl;
-    window.__CODE_NOIR_API_URL = configuredApiUrl;
+    window.API_URL = configuredApiUrl.trim().replace(/\/$/, '');
+    window.__CODE_NOIR_API_URL = window.API_URL;
     return;
   }
 
-  window.API_URL = localHost ? 'http://localhost:3001' : 'https://your-backend-domain.example.com';
+  const fallbackApiUrl = localHost
+    ? 'http://localhost:3001'
+    : 'https://your-render-backend-url.onrender.com';
+
+  window.API_URL = fallbackApiUrl;
   window.__CODE_NOIR_API_URL = window.API_URL;
 })();

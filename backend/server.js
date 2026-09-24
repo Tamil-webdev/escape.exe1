@@ -8,9 +8,32 @@ const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'app-data.json');
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 const FRONTEND_DIR = path.resolve(__dirname, '../frontend');
+const ALLOWED_ORIGINS = new Set(
+  [
+    CLIENT_URL,
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    process.env.API_URL,
+    ...String(process.env.ALLOWED_ORIGINS || '').split(',').map((value) => value.trim()).filter(Boolean)
+  ].filter(Boolean)
+);
 
 const app = express();
 const subscribers = new Set();
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+
+  try {
+    const hostname = new URL(origin).hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.vercel.app') || hostname.endsWith('.netlify.app') || hostname.endsWith('.onrender.com');
+  } catch (error) {
+    return false;
+  }
+}
 
 function defaultDb() {
   return {
@@ -147,7 +170,28 @@ function getDashboardStats(db) {
 
 const ROUND_DURATION_MS = 60 * 60 * 1000;
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.options('*', cors({
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '2mb' }));
 
 if (fs.existsSync(FRONTEND_DIR)) {
