@@ -11,61 +11,82 @@ Participants take on the role of cyber-detectives, solving a series of Python de
 * **Dual-Round Gameplay:**
   * **Round 1 (Boot Sequence):** 5 stages of Python debugging + SQL investigation.
   * **Round 2 (System Breach):** 6 stages of Python cryptographic decoding + 1 final escape password.
-* **Serverless Real-Time Backend:** Built entirely on Client-Side technologies (`localStorage` and `BroadcastChannel` API). This allows the game to sync state seamlessly across tabs without needing a dedicated backend database.
-* **Admin Control Center:** A beautiful, glassmorphism-styled dashboard for event organizers to:
+* **Centralized Backend Persistence:** The authoritative application state now lives in a Node.js API and JSON database, so teams can be registered and validated across different browsers, devices, and networks.
+* **Admin Control Center:** A glassmorphism dashboard for event organizers to:
   * View live statistics (active teams, completed stages, etc.).
   * Whitelist allowed teams.
   * Start and stop rounds dynamically.
-  * Monitor individual team progress in real-time.
+  * Monitor team progress in real time.
   * Download the Official Answer Key PDF.
 * **Dynamic PDF Answer Key Generation:** A standalone Node.js script automatically parses the puzzle database and generates a printable, formatted PDF Answer Key for organizers.
 
 ---
 
-## 🚀 Setup & Installation
+## 🚀 Local Setup
 
-You don't need a heavy backend to run this event. It runs completely locally or on any static hosting provider (like GitHub Pages, Vercel, or Netlify).
-
-### ⚡ One-Click Deployment
-Since this is a fully static site, you can deploy it instantly for free:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTamil-webdev%2FEscape.exe)  
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Tamil-webdev/Escape.exe)
-
-### 1. Running the Game Locally
-Since the game uses modern browser APIs like ES Modules and `BroadcastChannel`, it must be served over a local web server (not just by double-clicking the HTML file).
+### 1. Install dependencies
 
 ```bash
-# Using npx (Node.js)
-npx serve . 
-
-# OR using Python 3
-python -m http.server 3000
-```
-Then, open `http://localhost:3000` in your browser.
-
-### 2. Generating the Answer Key PDF
-If you modify the puzzles and need to regenerate the Official Answer Key for your organizers:
-
-```bash
-# Navigate to the generator folder
-cd pdf-gen
-
-# Install dependencies (only required once)
 npm install
+```
 
-# Generate the PDF
+### 2. Start the backend
+
+```bash
+npm start
+```
+
+This starts the API at `http://localhost:3001` and serves the frontend files from the project root.
+
+### 3. Open the app
+
+Open `http://localhost:3001` in a browser.
+
+### 4. Generating the Answer Key PDF
+
+```bash
+cd pdf-gen
+npm install
 node generate.js
 ```
-This will read the live `puzzles.js` data and generate `CODE_NOIR_Official_Answer_Key.pdf` in the root directory.
+
+This reads the live `puzzles.js` data and generates `CODE_NOIR_Official_Answer_Key.pdf` in the root directory.
+
+---
+
+## 🏗️ Production Architecture
+
+```text
+Frontend (HTML + CSS + JS)
+        ↓
+Backend API (Express.js)
+        ↓
+Central database (JSON file in /data)
+```
+
+The browser no longer acts as the single source of truth for team registration, round state, or progress. The backend enforces the authorized team list, room validation, round activation, and timer state.
+
+---
+
+## 🔐 Environment Variables
+
+Create a `.env` file in the project root using the example below:
+
+```env
+PORT=3001
+CLIENT_URL=http://localhost:3000
+API_URL=http://localhost:3001
+```
+
+The same pattern is used in production, but the deployed frontend must point to the deployed backend URL instead of `localhost`.
 
 ---
 
 ## 🎮 Event Flow & Routing
 
-1. **Login (`index.html`):** Participants log in using their Team Name and an Access Code provided by the organizers.
-2. **Round 1 (`round1.html`):** Teams debug Python scripts to uncover clues, which they then use to write SQL queries to find suspects.
-3. **Round 2 (`round2.html`):** Once organizers activate Round 2 from the Admin Dashboard, eligible teams who have completed Round 1 are granted access. Teams debug cryptographic ciphers to retrieve key fragments and assemble a final escape password.
+1. **Login (`index.html`):** Participants log in using their Team Name and the shared room code `NOIR26`.
+2. **Round 1 (`round1.html`):** Teams debug Python scripts and solve SQL clues.
+3. **Round 2 (`round2.html`):** Once organizers activate Round 2 from the Admin Dashboard, eligible teams who complete Round 1 can enter the final stage.
 
 ---
 
@@ -73,29 +94,31 @@ This will read the live `puzzles.js` data and generate `CODE_NOIR_Official_Answe
 
 To access the Organizer Dashboard:
 1. Navigate to `/admin.html`
-2. **Default Login:** `admin` / `password` *(Note: Change this in `admin.js` for production).*
+2. **Default Login:** `admin` / `password`
 
 **Admin Capabilities:**
-* **Create Rooms:** Generate access codes for participants.
-* **Start Round 2:** The Round 2 URL is locked by default. Clicking "Start Round 2" sends a live broadcast signal to all eligible participant screens, unlocking the final stages.
-* **Reset Data:** Clear the local database to restart the event for a new batch of participants.
+* Create rooms and manage event state.
+* Add approved teams.
+* Start and stop Round 2.
+* Reset round data or the full event state.
+* Monitor live progress and download the official answer key.
 
 ---
 
 ## 🛠️ Modifying the Puzzles
 
-All puzzles and answers are centralized in **`puzzles.js`**. 
-To change a puzzle, simply edit the `ROUND1_PUZZLES` or `ROUND2_STAGES` arrays. 
+All puzzles and answers are centralized in **`puzzles.js`**.
+To change a puzzle, simply edit the `ROUND1_PUZZLES` or `ROUND2_STAGES` arrays.
 
-> **Important:** If you change the puzzles, remember to regenerate the PDF Answer Key using the instructions above so your organizers have the correct answers!
+> If you change the puzzles, regenerate the PDF Answer Key so your organizers have the correct answers.
 
 ---
 
 ## 🎨 Technology Stack
 * **Frontend:** Vanilla HTML5, CSS3, JavaScript (ES6)
 * **Design:** Custom Glassmorphism UI, CSS Variables, SVG Icons
-* **Data Storage:** `localStorage` (Simulated Database)
-* **Real-time Sync:** `BroadcastChannel` API
+* **Backend:** Node.js + Express
+* **Data Storage:** Centralized JSON-backed database in the backend
 * **PDF Generation:** Node.js, PDFKit
 
 ---
